@@ -1,95 +1,99 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client'
+
+import { useEffect, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import 'github-markdown-css'
+
+import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis'
+import rehypeHighlight from 'rehype-highlight'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vs, dark, dracula, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { vsDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import rehypeRaw from 'rehype-raw'
+import { IconBrandGithub, IconBrandLinkedin, IconGlobe, IconMail, IconMapPin, IconWorldWww } from '@tabler/icons-react'
+
+const cvUrl = 'https://raw.githubusercontent.com/PatrykJaseniuk/PatrykJaseniuk/main/README.md'
 
 export default function Home() {
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+
+      <div className='markdown-body' >
+
+
+        <Container >  <div style={{ display: 'flex', padding: '2rem' }}>
+          <div style={{ width: '30%' }}>
+            <img style={{ borderRadius: '100%', objectFit: 'contain' }} src='https://avatars.githubusercontent.com/u/71171748?v=4' />
+          </div>
+
+          <div style={{ padding: '2rem' }} >
+            <h1>Patryk Jaseniuk</h1>
+            <p><IconMapPin /><strong>Nysa, Polska</strong></p>
+            <p><IconMail /> <strong>patryk.jaseniuk@gmail.com</strong></p>
+            <p><IconBrandLinkedin /> <a href='https://www.linkedin.com/in/patryk-jaseniuk-929136161/'>LinkedIn</a></p>
+            <p><IconBrandGithub /><a href='https://github.com/PatrykJaseniuk'>GitHub</a></p>
+            <p><IconWorldWww /><a href='https://github.com/PatrykJaseniuk'>patryk.jaseniukio</a></p>
+          </div>
         </div>
+          <MarkdownViewer src={cvUrl} />
+        </Container>
+        {/* <MarkdownViewer /> */}
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </>
   )
+}
+
+const Container = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div style={{
+      maxWidth: 1280, margin: 'auto',
+    }}
+    >
+      <div
+        style={{ margin: '1rem' }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
+const MarkdownViewer = ({ src }: { src: string }) => {
+
+  const [markdownContent, setMarkdownContent] = useState('');
+
+  useEffect(() => {
+    // Tutaj wczytaj zawartość pliku Markdown, na przykład za pomocą fetch lub z pliku
+    // Przykład wczytania zawartości z pliku "sample.md":
+    fetch(src)  // Zmień ścieżkę do swojego pliku
+      .then((response) => response.text())
+      .then((data) => setMarkdownContent(data))
+      .catch((error) => console.error(error));
+  }, []);
+
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeRaw as any]}
+      components={{
+        code({ node, inline, className, children, ...props }) {
+          const match = /language-(\w+)/.exec(className || '')
+          return !inline && match ? (
+            <SyntaxHighlighter
+              {...props}
+              children={String(children).replace(/\n$/, '')}
+              style={vscDarkPlus}
+              language={match[1]}
+              PreTag="div"
+            />
+          ) : (
+            <code {...props} className={className}>
+              {children}
+            </code>
+          )
+        }
+      }}
+    >{markdownContent}</ReactMarkdown>
+  );
 }
